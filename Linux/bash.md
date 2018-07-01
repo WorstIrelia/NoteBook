@@ -22,5 +22,7 @@ cd /lib/modules/$(uname -r)/kernel
 
 grep -n//标序号 -v//反向// -i//取反
 
+//正则
+[]
 
 ```
