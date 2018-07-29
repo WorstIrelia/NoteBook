@@ -13,11 +13,13 @@
     exit(-1);\
 }
 
+int tot_cnt=0;
 int tot[MAXN];
 int id[MAXN];
 pid_t pid;
 pthread_t tid[MAXN];
 pthread_mutex_t mutex[MAXN];
+pthread_mutex_t output;
 int n,m;
 struct Accept{
     int id;
@@ -35,6 +37,10 @@ static inline int max(int x,int y){
 void prepropose(int id,int proposer_id,int *maxn,int *cnt){
     pthread_mutex_lock(&mutex[id]);
     if(accept[id].id<proposer_id){
+        pthread_mutex_lock(&output);
+        printf("%4d acceptor %2d accept the propose %2d\n",tot_cnt++,id,proposer_id);
+        printf("%4d acceptor %2d has the value %2d \n",tot_cnt++,id,accept[id].value);
+        pthread_mutex_unlock(&output);
         (*cnt)++;
         accept[id].id=proposer_id;
         *maxn=max(*maxn,accept[id].value);
@@ -42,47 +48,66 @@ void prepropose(int id,int proposer_id,int *maxn,int *cnt){
     pthread_mutex_unlock(&mutex[id]);    
 
 }
-void set_accept(int id,int proposer_id,int value){
-    //printf("%d %d %d\n",id,proposer_id,value);
+void set_accept(int id,int proposer_id,int value,int *cnt){
     pthread_mutex_lock(&mutex[id]);
-    //printf("%d %d %d ttt\n",id,accept[id].id,proposer_id);
     if(accept[id].id==proposer_id){
-        printf("%d %d %d %d\n",id,proposer_id,accept[id].value,value);
-        assert(accept[id].value==-1||accept[id].value==value);
+        int pre = accept[id].value;
+        (*cnt)++;
         accept[id].id=proposer_id;
         accept[id].value=value;
+        pthread_mutex_lock(&output);
+        printf("%4d acceptor %2d update the value %2d to %2d\n",tot_cnt++,id,pre,accept[id].value);
+        pthread_mutex_unlock(&output);
+        
     }
     pthread_mutex_unlock(&mutex[id]);
 }
 void *proposer(void *arg){
-    int proposer_id=*(int*)arg;
+    //printf("im_in\n");
+    int proposer_id=(*(int*)arg);
     free(arg);
     int a[MAXN];
     for(int i=0;i<m;i++){
         a[i]=i;
     }
-    int tmp=m;
-    int maxn=-1;
+    int tmp;
+    int maxn;
     int i;
-    int cnt=0;
-    for(i=0;i<m;i++){
-        int index=rand()%tmp;
+    int cnt;
+    int acc_cnt;
+    while(1){
+        //printf("im_in\n");
+        tmp=m;
+        maxn=-1;
+        cnt=0;
+        acc_cnt=0;
+        
+        for(i=0;i<m;i++){
+            int index=rand()%tmp;
         //printf("%d %d %d %daaa\n",proposer_id,index,i,a[index]);
-        prepropose(a[index],proposer_id,&maxn,&cnt);
-        swap(&a[index],&a[tmp-1]);
-        tmp--;
-        if(cnt>m/2) break;
-    }
-    if(maxn==-1) maxn=proposer_id;
-    //printf("%d %d!!!\n",proposer_id,maxn);
-    for(int j=m-cnt;j<m&&cnt>m/2;j++){
+            prepropose(a[index],proposer_id,&maxn,&cnt);
+            swap(&a[index],&a[tmp-1]);
+            tmp--;
+            if(cnt>m/2) break;
+        }
+        //printf("%d\n",maxn);
+        if(maxn==-1) maxn=proposer_id%n;
+        for(int j=m-cnt;j<m&&cnt>m/2;j++){
         //printf("%d %d!!!\n",proposer_id,maxn);
-        set_accept(a[j],proposer_id,maxn);
+            set_accept(a[j],proposer_id,maxn,&acc_cnt);
+        }
+        //printf("%d\n",acc_cnt);
+        if(acc_cnt>m/2) {
+            printf("proposer_id = %d ,value = %d, ok!\n",proposer_id,maxn);
+            break;
+        }
+        proposer_id+=n;
+        
     }
     
 
 }
-void do_it(int* flag){
+void do_it(){
     int tmpn=n;
     int *q;
     for(int i=0;i<n;i++){
@@ -99,17 +124,11 @@ void do_it(int* flag){
         //printf("%d\n",i);
         pthread_join(tid[i],NULL);
     }
+    printf("---------------------------------------------------------------\n");
     for(int i=0;i<m;i++){
         tot[accept[i].value]++;
-        printf("%d %d\n",accept[i].id,accept[i].value);
+        printf("acceptor %2d finally accepted proposer %2d and value %2d\n",i,accept[i].id,accept[i].value);
     }
-    printf("....\n");
-    for(int i=0;i<n;i++){
-        if(tot[i]>m/2) *flag=0;
-        if(tot[i]) printf("%d %d\n",i,tot[i]);
-    }
-    
-
 }
 int main(){
     srand(time(0));
@@ -118,6 +137,7 @@ int main(){
     assert(n>0&&m>0);
     //assert(n==0||m==0);
     pid=getpid();
+    pthread_mutex_init(&output,NULL);
     for(int i=0;i<m;i++){
         accept[i].value=-1;
     }
@@ -128,9 +148,6 @@ int main(){
         id[i]=i;
     }
     int flag=1;
-    while(flag){
-        for(int i=0;i<m;i++) tot[i]=0;
-        do_it(&flag);
-    }
+    do_it();
     return 0;
 }
