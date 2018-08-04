@@ -102,6 +102,8 @@ int main(){
 面向对象编程的过程中，下行到上行总是安全的。(子类对象总是包含了父类对象的成员)。
 上行到下行不一定是安全的。(转化的过程中会加一个offset,有多个父类的情况)
 
+static_cast<>() 只支持有类型的指针到void的指针的转换，或者void的类型的指针到有类型的指针的转换
+
 ### dynamic_cast<>()
 
 和dynamic_cast<>()密切相关的是 **RTTI run-time type identification**
@@ -257,3 +259,78 @@ const 修饰参数
 
 
 ## c++ 11 智能指针
+
+
+
+
+## 迭代器与容器
+
+回忆我们之前是如何构造数据结构的
+for example
+二叉数
+
+
+数据放置于容器之中
+```c++
+struct tree_node{
+    typename value;
+    tree_node* lson;
+    tree_node* rson;
+    tree_node* father;
+}
+
+```
+这里的tree_node就是一个容器，容易包裹了我们需要的数据value
+如果我们想对树进行一些操作，那么可以用一个
+```c++
+tree_node* ptr;
+```
+但是这个指针的* 与 ->指向的是tree_node 这个节点。
+对用户来讲，迭代器所指对象应该就是value本身，用户只关心数据，所以lson,rson,father这些信息不是必须的，所以我们得重新封装其的* ->操作
+```c++
+struct iterator{
+    tree_node* ptr;
+    reference operator*(){
+        return ptr->value;
+    }
+    pointer operator->(){
+        return &operator*();
+    }
+}
+
+```
+仅仅有容器和迭代器还是不够的，我们还需要算法作为灵魂，对迭代器指向的包裹数据的容器做一些操作。
+为了泛化算法，统一接受的参数为迭代器。
+所以迭代器要支持
+```c++
+    struct iterator{
+    tree_node* ptr;
+    reference operator*(){
+        return ptr->value;
+    }
+    pointer operator->(){
+        return &operator*();
+    }
+    self& operator++(){
+        //do something
+        return *this;
+    }
+    self operator++(int){
+        self ret = *this;
+        ++(*this);
+        return *this;
+    }
+    //same as --
+    bool operator==();
+    bool operator!=();
+}
+```
+这样 和原生指针的操作基本一样，用户看起来使用就像是在使用指向数据的指针一样。
+
+
+
+## c++左值右值
+
+
+引用只能和左值绑定
+类型转换生成一个临时的右值，所以不能和引用绑定

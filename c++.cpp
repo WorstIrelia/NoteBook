@@ -183,21 +183,65 @@ public:
 };
 
 template<typename T>
-T foo(T = int x){
+T foo(T x){
     return x + 1;
 }
 
 
+template<typename T>
+struct my_remove_reference{
+    typedef T type;
+};
+
+template<typename T>
+struct my_remove_reference<T&>{
+    typedef T type;
+};
 
 
 
+struct fc{
+    int x;
+    fc(){
+        printf("construct\n")
+    }
+    fc(const fc& rsh){
+        printf("it's lvalue\n");
+    }
+    fc(fc&& rsh){
+        printf("it's rvalue\n");
+    }
+
+};
+
+// template<typename T>
+// void _test(T value){
+
+// }
+template<typename T>
+void _test(T&& value){
+    printf("ok\n");
+    value.x = 1;
+}
+// template<typename T>
+// void _test(T& value){
+//     printf("lvalue\n");
+//     // return value;
+// }
 
 
 
 int main(){
     // set_new_handler(abctest);
-    double x = foo<double>(5.6);
-    cout << x << endl;
+    fc value;
+    _test(value);
+    _test(fc());
+    // _test(std::move(value));
+
+
+
+    // double x = foo<double>(5.6);
+    // cout << x << endl;
 }
 
 // int main(int argc,char *argv[]){

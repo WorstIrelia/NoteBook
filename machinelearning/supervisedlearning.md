@@ -44,3 +44,18 @@ $b^{'} = b + y_{i}$
 重复，知道找不到不满足的点
 
 ### 推导过程和对偶形式
+
+设 max 和 min 
+构造$\boldsymbol{w_{opt}}\cdot \boldsymbol{w_{k}}>= kn\eta$
+构造${\parallel{\boldsymbol{w_{k}}}\parallel}^{2} <= k \eta ^{2}R^2$
+$R = max({\parallel{\boldsymbol{x_{i}}}\parallel})$
+$\eta = min(y_{i}(\boldsymbol{w_{opt}\cdot \boldsymbol{x_{i}}}))$
+
+$\boldsymbol{w}$可以表示成$a_{i}x_{i}y_{i}$的线性组合,$a_{i}$是系数
+
+### 不可分的条件
+
++1 和 -1 的凸包不相交
+
+## k 近邻法
+
