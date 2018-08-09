@@ -2,6 +2,8 @@
     "files.associations": {
         "iostream": "cpp",
         "bitset": "cpp",
-        "ostream": "cpp"
+        "ostream": "cpp",
+        "type_traits": "cpp",
+        "*.tcc": "cpp"
     }
 }

@@ -6,11 +6,17 @@
 #include <arpa/inet.h>
 
 
+int a = 2;
+static int b = 2;
+int c[100]={};
+int d = 3;
 static void foo(){
     printf("hello world\n");
 
 }
-
+void foo2(){
+    printf("hello world\n");
+}
 int main(){
     printf("hello world\n");
     // int socketfd = socket(AF_INET, SOCK_STREAM, 0);

@@ -334,3 +334,79 @@ struct iterator{
 
 引用只能和左值绑定
 类型转换生成一个临时的右值，所以不能和引用绑定
+
+## emplace_back
+
+底层直接调用placement_new 在容器上构造对象，某些情况下可以减少一次临时对象的构造
+
+## template 模板推导规则
+
+### 1函数模板是一个指针或者引用，但不是通用引用
+```c++
+template<typename T>
+void foo(T& x){
+
+}
+int x;
+int &y = x;
+const int &z = x;
+foo(y) 去引用
+foo(z) 保const
+
+```
+
+T -> int | const int
+所以传递一个const int &给模板是安全的，因为类型推导保留关键字
+引用特性忽略
+
+```c++
+void foo(const T&){
+
+}
+```
+T -> int
+忽略关键字特性和引用特性
+
+指针同理
+
+### 2 统一引用
+```c++
+template<typename T>
+void foo(T&& x){
+
+}
+
+```
+
+惟一的一个场景会把T推导成引用
+T -> int& | int&&
+左值 T -> int&
+右值 T -> int&& 
+我们利用这个特性可以配合remove_reference实现完美转发
+
+
+### 普通
+```c++
+
+template<typename T>
+void foo(T x){
+
+}
+```
+规则 引用忽略，关键字忽略。
+因为用户这么写往往意味着要拷贝一个新的对象(按值传递) 类型推导往往是
+T -> int
+去关键字往往以为这这个对象的关键字，而不是和该对象有关联的关键字
+const char * const ptr;
+推导后是 const char * ptr;
+指针可变，指向的内容不可变。
+
+
+### 应该记住
+1. 在进行模板的类型推导时，传入参数如果是引用，会被当作非引用，即忽略掉引用部分。
+
+2. 对统一引用参数进行类型推导时，左值参数会获得特殊处理。
+
+3. 按值传递的参数进行类型推导时，const或者volatile参数会被处理成非const或非volatile。
+
+4. 在模板类型推导时，数组和函数参数会退化成指针，除非它们被用做初始化引用。

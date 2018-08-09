@@ -188,22 +188,15 @@ T foo(T x){
 }
 
 
-template<typename T>
-struct my_remove_reference{
-    typedef T type;
-};
-
-template<typename T>
-struct my_remove_reference<T&>{
-    typedef T type;
-};
-
-
+// template<typename T>
+// struct my_remove_reference<T&&>{
+//     typedef T type;
+// };
 
 struct fc{
     int x;
     fc(){
-        printf("construct\n")
+        printf("construct\n");
     }
     fc(const fc& rsh){
         printf("it's lvalue\n");
@@ -218,11 +211,11 @@ struct fc{
 // void _test(T value){
 
 // }
-template<typename T>
-void _test(T&& value){
-    printf("ok\n");
-    value.x = 1;
-}
+// template<typename T>
+// void _test(T&& value){
+//     printf("ok\n");
+//     value.x = 1;
+// }
 // template<typename T>
 // void _test(T& value){
 //     printf("lvalue\n");
@@ -230,12 +223,167 @@ void _test(T&& value){
 // }
 
 
+static int a = 2;
+int b = 3;
+
+
+void test(int x){
+    // int x = 0;
+    if(x == 0){
+        throw "abcd";
+    }
+
+}
+struct fcc{
+    int *ptr ;
+    fcc(){
+        ptr = new int;
+    }
+    fcc(fcc& rsh){
+        ptr = rsh.ptr;
+        rsh.ptr = 0;
+    }
+    fcc(fcc*& rsh){
+        ptr = rsh->ptr;
+        rsh->ptr = 0;
+    }
+    ~fcc(){
+        delete ptr;
+    }
+
+};
+
+
+
+template<typename T>
+void reference_test(T&& a){
+
+}
+
+
+template<typename T>
+void reference_test(T& a){
+    
+}
+
+void _foo(int&& a){
+    cout << "r" << endl;
+}
+// void foo(int& a){
+//     cout << "l" << endl;
+// }
+
+//变量 左值 右值 类型
+
+int&& __test(int & a){
+    return static_cast<int&&>(a);
+}
+int& _test(int & a){
+    return a;
+}
+
+
+struct abc{
+    // int x;
+    abc(const abc& rsh){
+        cout << "l" << endl;
+    }
+    abc(abc&& rsh){
+        cout << "r" << endl;
+    }
+    abc(){
+        cout << "construct" << endl;
+    }
+    ~abc(){
+        cout << "deconstruct" << endl;
+    }
+};
+
+
+template<typename T>
+struct my_remove_reference{
+    typedef T type;
+};
+
+template<typename T>
+struct my_remove_reference<T&>{
+    typedef T type;
+};
+
+template<typename T>
+struct my_remove_reference<T&&>{
+    typedef T type;
+};
+
+
+template<typename T>
+void second(T a){
+    cout << "second" << endl;
+}
+
+
+template<typename T>
+T&&
+my_forword(typename my_remove_reference<T>::type& x){
+    return static_cast<T&&>(x);
+}
+
+template<typename T>
+void first(T&& x){
+    cout << "first" << endl;
+    second(forward<T>(abc()));
+    // second<typename my_remove_reference<T>::type>(x);
+}
+
+
+
+
+void fuck(int a){
+    cout << a << endl;
+    a = 12;
+}
+
 
 int main(){
+    
+    // fox ou
+    abc a;
+    first(abc());
+    // int && b = 2;
+    // int a = 3;
+    // int &c = static_cast<int&>(b);
+    // cout << &c << ' ' << &b << endl;
+    // // cout << &__test(a) << endl;
+    // // cout << &_test(a) << endl;
+    // cout<< "ok" << endl;
+    // cout << &b << endl;
+    
+    // int tmp = 1;
+    // int &a = tmp;
+    // int &&b = 2;
+    // int &c = b;
+    // c = 12;
+    // foo(b);
+    // foo((int&&)c);
+    // cout << a << ' ' << b << endl;
+    // my_remove_reference<int&>::type _tmp = tmp;
+    // reference_test(b);
+    // reference_test<int&>(a);
+    // try{
+    //     test(0);
+    // }
+    // catch(const char* str){
+    //     cout << str << endl;
+    // }
+    // fcc *_ptr = new fcc;
+    // shared_ptr<fcc> ptr = make_shared<fcc>(_ptr);
+    // shared_ptr<fcc> ptr2 = make_shared<fcc>(_ptr);
+    // cout << sizeof(ptr) << endl;
+
     // set_new_handler(abctest);
-    fc value;
-    _test(value);
-    _test(fc());
+    // fc value;
+    // _test(value);
+    // _test(fc());
     // _test(std::move(value));
 
 
