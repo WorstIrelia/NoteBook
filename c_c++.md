@@ -410,3 +410,86 @@ const char * const ptr;
 3. 按值传递的参数进行类型推导时，const或者volatile参数会被处理成非const或非volatile。
 
 4. 在模板类型推导时，数组和函数参数会退化成指针，除非它们被用做初始化引用。
+
+
+## static 四种
+### c中变量前+
+静态存储区，链接TYPE 为local 对外文件不可见
+值得注意的是局部静态变量存储区一样，但是有作用域是有限的
+### 函数前+ 
+链接TYPE为local 对外文件不可见
+### c++ 类中静态变量
+sizeof(class) 中不占用空间，所有类共享一个变量，通过class::name使用。
+必须初始化
+### 静态成员函数
+只能操作静态成员，可以通过class::name直接使用，本质上没有传递this指针，所以不能够操作非静态成员。
+无法是虚函数。
+
+
+## 迭代器失效
+某些容器的某些操作会导致迭代器失效，如vector，删除某个迭代器指向的元素，会导致后面的元素前移，后面的迭代器指向的某些东西会失效。
+扩容也会失效。
+vector还有一个坑就是clear()不会释放vector的空间。
+swap到一个tmp变量上释放或者等其作用于结束就行。
+但是某些容器不会，如list等。
+具体失效要看具体的容器而言。
+
+## map/set
+map/set 底层采用的数据结构都是红黑树，插入删除查找操作的均摊复杂度是logn.
+红黑树和平衡树的一些区别。
+红黑树的插入调整最多3次，平衡树要调整到根。
+平衡树高度平衡，红黑树高度最多相差一倍。
+根黑叶黑，从根到叶节点的黑色节点树一样多。
+map 在红黑树的节点上存的是一个pair<key,value>,set 就是 key
+
+## type_traits编程技巧
+本质 为了实现类型推导，STL能从迭代器的类型推导出所指对象的类型等等
+为社么要加一层type_tratis 因为要解决原生指针推导的问题，偏特化一下
+```c++
+template<typename T>
+struct iterator{
+    typedef T value;
+};
+// so we can 
+template<typename Iter>
+Iter::value 
+foo(Iter it){
+    return *it;
+}
+// but if Iter is int *??? what to do?
+// so we need to type_traits
+template<typename Iter>
+struct type_traits{
+    typedef Iter::value value;
+}
+//partial specialization
+
+template<typename Iter>
+struct type_traits<Iter*>{
+    typedef Iter value;
+}
+
+//so we can
+
+template<typename Iter>
+typename type_traits<Iter>::value
+foo(Iter it){
+    return *it;
+}
+
+```
+
+## volatile
+并发变成里用到
+a++
+
+编译器会优化成把变量放到寄存器，在寄存器++，这样加锁也没用
+
+## restrict c99 c++未引入
+促进编译器优化，保证指向该区域只有该一个指针可以修改
+
+## extern 模板 
+提醒编译器不要实例化该模板。加快编译速度，别的模块已经实例化过了
+
+## 异常抛出底层实现机制
+！！
